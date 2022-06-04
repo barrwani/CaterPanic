@@ -1,0 +1,152 @@
+[gd_scene load_steps=12 format=2]
+
+[ext_resource path="res://icon.png" type="Texture" id=1]
+[ext_resource path="res://Scripts/Water.gd" type="Script" id=2]
+[ext_resource path="res://Sprites/up.png" type="Texture" id=3]
+
+[sub_resource type="Shader" id=45]
+code = "shader_type canvas_item;
+
+uniform vec2 scale; // Used for sprite script. Don't edit this value in the inspector.
+uniform float zoom; // Used for sprite script. Don't edit this value in the inspector.
+
+uniform sampler2D refraction_map;
+uniform sampler2D water_mask;
+
+uniform vec2 gap_stretch = vec2(0.8, 0.05);
+uniform vec2 refraction_stretch = vec2(2.0, 0.8);
+uniform float refraction_strength : hint_range(0.0, 0.1) = 0.02;
+
+uniform vec4 water_tint : hint_color = vec4(0.2, 0.6, 1.0, 0.1);
+uniform vec4 water_highlight : hint_color = vec4(1.0, 1.0, 1.0, 0.3);
+uniform float speed = 1.0;
+uniform float flow_gaps : hint_range(0.0, 1.0) = 0.33;
+uniform float highlight_width : hint_range(0.0, 0.3) = 0.02;
+
+void fragment()
+{
+	// Get the two noise textures and make them move on the y axis. The gaps move twice as fast as the refraction, but you can tweak this by changing (speed * 0.5)
+	vec2 refraction_offset = texture(refraction_map, vec2(UV.x, UV.y + -TIME * speed * 0.5) * scale * refraction_stretch).xy;
+	vec2 gap_mask = texture(water_mask, vec2(UV.x, UV.y + -TIME * speed) * scale * gap_stretch).xy;
+	
+	// Set values between -0.5 and 0.5 (instead of 0 and 1). Otherwise the reflection will move whith increased refraction_strength
+	refraction_offset -= 0.5; 
+	
+	// Get the screen texture and distort it
+	vec4 refraction = texture(SCREEN_TEXTURE, SCREEN_UV - refraction_offset * refraction_strength * zoom);
+	
+	
+	// Create holes and apply colors and textures //
+	
+	vec4 color = vec4(1.0);
+	
+	// Define what values will be the water highlight color (the gap border)
+	float inner_edge = flow_gaps + highlight_width;
+	
+	// See if the pixel is within the edges range and use the water colors alpha to blend between showing color or refraction texture.
+	if (gap_mask.x < inner_edge)
+	{
+		color.rgb = mix(refraction.rgb, water_highlight.rgb, water_highlight.a);
+	}
+	else
+	{
+		color.rgb = mix(refraction.rgb, water_tint.rgb, water_tint.a);
+	}
+	
+	// If the value is below the gap threshhold make it transparent (a gap)
+	if (gap_mask.x < flow_gaps)
+	{
+		color.a = 0.0;
+	}
+	
+	
+	// Crate Edge Shape //
+	
+	// Set the shape for the top and bottom edges. Use water_mask as shape but with other values to flatten it out horizontally. 
+	vec2 water_edge = texture(water_mask, vec2(UV.x, UV.y + -TIME * 0.1) * scale * vec2(0.15, 0.6)).xy;
+	water_edge -= 0.5;
+	
+	// Use the same mask as for the gaps for left and right edge.
+	vec2 vertical_edge_mask = gap_mask - 0.5;
+	
+	// Apply the new masks to the edges. This will make the wobble effect.
+	color.a = mix(0.0, color.a, step(UV.x + vertical_edge_mask.x * 0.2, 0.92)); // Right edge
+	color.a = mix(color.a, 0.0, step(UV.x - vertical_edge_mask.x * 0.2, 0.08)); // Left edge
+	
+	color.a = mix(0.0, color.a, step(UV.y + water_edge.y * 0.1, 0.95));  //Bottom edge
+	color.a = mix(color.a, 0.0, step(UV.y - water_edge.y * 0.05, 0.05)); //Top edge
+	
+	COLOR = color;
+}"
+
+[sub_resource type="OpenSimplexNoise" id=46]
+
+[sub_resource type="NoiseTexture" id=47]
+noise = SubResource( 46 )
+
+[sub_resource type="OpenSimplexNoise" id=48]
+
+[sub_resource type="NoiseTexture" id=34]
+noise = SubResource( 48 )
+
+[sub_resource type="ShaderMaterial" id=35]
+shader = SubResource( 45 )
+shader_param/scale = Vector2( 1.641, 15.8239 )
+shader_param/zoom = 0.105112
+shader_param/gap_stretch = Vector2( 0.8, 0.05 )
+shader_param/refraction_stretch = Vector2( 2, 0.8 )
+shader_param/refraction_strength = 0.02
+shader_param/water_tint = Color( 0.2, 0.211765, 1, 0.239216 )
+shader_param/water_highlight = Color( 1, 1, 1, 0.301961 )
+shader_param/speed = 1.0
+shader_param/flow_gaps = 0.253
+shader_param/highlight_width = 0.02
+shader_param/refraction_map = SubResource( 47 )
+shader_param/water_mask = SubResource( 34 )
+
+[sub_resource type="Animation" id=10]
+resource_name = "pulse"
+length = 0.4
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Up:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Vector2( 0.5, 0.5 ), Vector2( 0.55, 0.55 ), Vector2( 0.5, 0.5 ) ]
+}
+
+[sub_resource type="RectangleShape2D" id=2]
+extents = Vector2( 41.9714, 453.5 )
+
+[node name="UpStream" type="Area2D" groups=["upstream"]]
+
+[node name="Waterfall" type="Sprite" parent="."]
+material = SubResource( 35 )
+position = Vector2( 16.2974, 0 )
+rotation = 3.14159
+scale = Vector2( 1.641, 20 )
+texture = ExtResource( 1 )
+script = ExtResource( 2 )
+
+[node name="Up" type="Sprite" parent="."]
+position = Vector2( 18, -24 )
+scale = Vector2( 0.549756, 0.549756 )
+z_index = 1
+texture = ExtResource( 3 )
+flip_h = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+autoplay = "pulse"
+anims/pulse = SubResource( 10 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2( 14.7014, 13 )
+shape = SubResource( 2 )
+
+[connection signal="item_rect_changed" from="Waterfall" to="Waterfall" method="_on_Waterfall_item_rect_changed"]

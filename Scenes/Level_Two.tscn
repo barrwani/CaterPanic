@@ -1,0 +1,1058 @@
+[gd_scene load_steps=78 format=2]
+
+[ext_resource path="res://Sprites/seaweed2.png" type="Texture" id=1]
+[ext_resource path="res://Sprites/rockleft.png" type="Texture" id=2]
+[ext_resource path="res://Scenes/Pillar.tscn" type="PackedScene" id=3]
+[ext_resource path="res://Scenes/ThruPlat.tscn" type="PackedScene" id=4]
+[ext_resource path="res://Scenes/Spikes.tscn" type="PackedScene" id=5]
+[ext_resource path="res://Scenes/AirPass.tscn" type="PackedScene" id=6]
+[ext_resource path="res://Scenes/Platform.tscn" type="PackedScene" id=7]
+[ext_resource path="res://Sprites/grass.png" type="Texture" id=8]
+[ext_resource path="res://Sprites/cloudback.png" type="Texture" id=9]
+[ext_resource path="res://Sprites/sky.png" type="Texture" id=10]
+[ext_resource path="res://Sprites/starfish.png" type="Texture" id=11]
+[ext_resource path="res://Sprites/seaweed.png" type="Texture" id=12]
+[ext_resource path="res://Sprites/seafloor.png" type="Texture" id=13]
+[ext_resource path="res://Sprites/cloudfront.png" type="Texture" id=14]
+[ext_resource path="res://Sprites/coral.png" type="Texture" id=15]
+[ext_resource path="res://Scenes/Fan.tscn" type="PackedScene" id=16]
+[ext_resource path="res://Scripts/Predator.gd" type="Script" id=17]
+[ext_resource path="res://Scripts/Water.gd" type="Script" id=18]
+[ext_resource path="res://icon.png" type="Texture" id=19]
+[ext_resource path="res://Scenes/SeaPass.tscn" type="PackedScene" id=20]
+[ext_resource path="res://Scenes/GroundPass.tscn" type="PackedScene" id=21]
+[ext_resource path="res://Scenes/Mine.tscn" type="PackedScene" id=22]
+[ext_resource path="res://Scenes/UpStream.tscn" type="PackedScene" id=23]
+[ext_resource path="res://Scenes/LevelChange.tscn" type="PackedScene" id=24]
+[ext_resource path="res://SFX/fishjump.wav" type="AudioStream" id=25]
+[ext_resource path="res://SFX/dash.wav" type="AudioStream" id=26]
+[ext_resource path="res://Scripts/Player.gd" type="Script" id=27]
+[ext_resource path="res://Scripts/EnvState.gd" type="Script" id=28]
+[ext_resource path="res://Scripts/PlayerStateMachine.gd" type="Script" id=29]
+[ext_resource path="res://Scripts/ScreenShake.gd" type="Script" id=30]
+[ext_resource path="res://Sprites/f1.png" type="Texture" id=31]
+[ext_resource path="res://Sprites/b0.png" type="Texture" id=32]
+[ext_resource path="res://SFX/death.wav" type="AudioStream" id=33]
+[ext_resource path="res://SFX/land.wav" type="AudioStream" id=34]
+[ext_resource path="res://SFX/jump.wav" type="AudioStream" id=35]
+[ext_resource path="res://SFX/fly.wav" type="AudioStream" id=36]
+[ext_resource path="res://Sprites/0.png" type="Texture" id=37]
+[ext_resource path="res://Sprites/1.png" type="Texture" id=38]
+[ext_resource path="res://UI/back.png" type="Texture" id=39]
+[ext_resource path="res://Sprites/2.png" type="Texture" id=40]
+[ext_resource path="res://Sprites/b1.png" type="Texture" id=41]
+[ext_resource path="res://SFX/change.wav" type="AudioStream" id=42]
+[ext_resource path="res://UI/front.png" type="Texture" id=43]
+[ext_resource path="res://SFX/inwater.wav" type="AudioStream" id=44]
+[ext_resource path="res://Sprites/f0.png" type="Texture" id=45]
+[ext_resource path="res://Sprites/pillarextend.png" type="Texture" id=46]
+
+[sub_resource type="SpriteFrames" id=26]
+animations = [ {
+"frames": [ ExtResource( 12 ), ExtResource( 1 ) ],
+"loop": true,
+"name": "default",
+"speed": 2.0
+} ]
+
+[sub_resource type="CapsuleShape2D" id=1]
+radius = 24.4256
+height = 166.421
+
+[sub_resource type="CapsuleShape2D" id=7]
+radius = 50.1189
+height = 15.5243
+
+[sub_resource type="CapsuleShape2D" id=8]
+radius = 17.1189
+height = 116.0
+
+[sub_resource type="Shader" id=13]
+code = "shader_type canvas_item;
+
+uniform sampler2D dissolve_texture : hint_albedo;
+uniform float dissolve_value : hint_range(0,1);
+
+void fragment(){
+    vec4 main_texture = texture(TEXTURE, UV);
+    vec4 noise_texture = texture(dissolve_texture, UV);
+    main_texture.a *= floor(dissolve_value + min(1, noise_texture.x));
+    COLOR = main_texture;
+}"
+
+[sub_resource type="OpenSimplexNoise" id=39]
+
+[sub_resource type="NoiseTexture" id=40]
+noise = SubResource( 39 )
+
+[sub_resource type="ShaderMaterial" id=41]
+shader = SubResource( 13 )
+shader_param/dissolve_value = 1.0
+shader_param/dissolve_texture = SubResource( 40 )
+
+[sub_resource type="Animation" id=12]
+resource_name = "Death"
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:material:shader_param/dissolve_value")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ 1.0, 0.0 ]
+}
+
+[sub_resource type="Animation" id=42]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:material:shader_param/dissolve_value")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ 1.0 ]
+}
+
+[sub_resource type="SpriteFrames" id=4]
+animations = [ {
+"frames": [ ExtResource( 37 ), ExtResource( 40 ) ],
+"loop": true,
+"name": "Jump",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 38 ) ],
+"loop": true,
+"name": "Idle",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 38 ), ExtResource( 37 ), ExtResource( 40 ) ],
+"loop": true,
+"name": "Run",
+"speed": 8.0
+}, {
+"frames": [ ExtResource( 45 ), ExtResource( 31 ) ],
+"loop": true,
+"name": "FastFish",
+"speed": 20.0
+}, {
+"frames": [ ExtResource( 45 ), ExtResource( 31 ) ],
+"loop": true,
+"name": "Fish",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 37 ), ExtResource( 38 ), ExtResource( 40 ) ],
+"loop": true,
+"name": "Fall",
+"speed": 15.0
+}, {
+"frames": [ ExtResource( 41 ), ExtResource( 32 ), ExtResource( 32 ), ExtResource( 41 ), ExtResource( 32 ), ExtResource( 41 ) ],
+"loop": true,
+"name": "Bjump",
+"speed": 10.0
+}, {
+"frames": [ ExtResource( 32 ) ],
+"loop": true,
+"name": "Bidle",
+"speed": 5.0
+} ]
+
+[sub_resource type="CapsuleShape2D" id=5]
+radius = 24.9997
+height = 166.421
+
+[sub_resource type="CapsuleShape2D" id=6]
+radius = 52.1188
+height = 29.5245
+
+[sub_resource type="CapsuleShape2D" id=9]
+radius = 24.1189
+height = 114.0
+
+[sub_resource type="RectangleShape2D" id=38]
+extents = Vector2( 51.5, 218.5 )
+
+[sub_resource type="RectangleShape2D" id=43]
+extents = Vector2( 51.5, 227 )
+
+[sub_resource type="RectangleShape2D" id=23]
+extents = Vector2( 337.25, 1909.5 )
+
+[sub_resource type="Shader" id=10]
+code = "shader_type canvas_item;
+
+uniform vec2 scale; // Used for sprite script. Don't edit this value in the inspector.
+uniform float zoom; // Used for sprite script. Don't edit this value in the inspector.
+
+uniform sampler2D refraction_map;
+uniform sampler2D water_mask;
+
+uniform vec2 gap_stretch = vec2(0.8, 0.05);
+uniform vec2 refraction_stretch = vec2(2.0, 0.8);
+uniform float refraction_strength : hint_range(0.0, 0.1) = 0.02;
+
+uniform vec4 water_tint : hint_color = vec4(0.2, 0.6, 1.0, 0.1);
+uniform vec4 water_highlight : hint_color = vec4(1.0, 1.0, 1.0, 0.3);
+uniform float speed = 1.0;
+uniform float flow_gaps : hint_range(0.0, 1.0) = 0.33;
+uniform float highlight_width : hint_range(0.0, 0.3) = 0.02;
+
+void fragment()
+{
+	// Get the two noise textures and make them move on the y axis. The gaps move twice as fast as the refraction, but you can tweak this by changing (speed * 0.5)
+	vec2 refraction_offset = texture(refraction_map, vec2(UV.x, UV.y + -TIME * speed * 0.5) * scale * refraction_stretch).xy;
+	vec2 gap_mask = texture(water_mask, vec2(UV.x, UV.y + -TIME * speed) * scale * gap_stretch).xy;
+	
+	// Set values between -0.5 and 0.5 (instead of 0 and 1). Otherwise the reflection will move whith increased refraction_strength
+	refraction_offset -= 0.5; 
+	
+	// Get the screen texture and distort it
+	vec4 refraction = texture(SCREEN_TEXTURE, SCREEN_UV - refraction_offset * refraction_strength * zoom);
+	
+	
+	// Create holes and apply colors and textures //
+	
+	vec4 color = vec4(1.0);
+	
+	// Define what values will be the water highlight color (the gap border)
+	float inner_edge = flow_gaps + highlight_width;
+	
+	// See if the pixel is within the edges range and use the water colors alpha to blend between showing color or refraction texture.
+	if (gap_mask.x < inner_edge)
+	{
+		color.rgb = mix(refraction.rgb, water_highlight.rgb, water_highlight.a);
+	}
+	else
+	{
+		color.rgb = mix(refraction.rgb, water_tint.rgb, water_tint.a);
+	}
+	
+	// If the value is below the gap threshhold make it transparent (a gap)
+	if (gap_mask.x < flow_gaps)
+	{
+		color.a = 0.0;
+	}
+	
+	
+	// Crate Edge Shape //
+	
+	// Set the shape for the top and bottom edges. Use water_mask as shape but with other values to flatten it out horizontally. 
+	vec2 water_edge = texture(water_mask, vec2(UV.x, UV.y + -TIME * 0.1) * scale * vec2(0.15, 0.6)).xy;
+	water_edge -= 0.5;
+	
+	// Use the same mask as for the gaps for left and right edge.
+	vec2 vertical_edge_mask = gap_mask - 0.5;
+	
+	// Apply the new masks to the edges. This will make the wobble effect.
+	color.a = mix(0.0, color.a, step(UV.x + vertical_edge_mask.x * 0.2, 0.92)); // Right edge
+	color.a = mix(color.a, 0.0, step(UV.x - vertical_edge_mask.x * 0.2, 0.08)); // Left edge
+	
+	color.a = mix(0.0, color.a, step(UV.y + water_edge.y * 0.1, 0.95));  //Bottom edge
+	color.a = mix(color.a, 0.0, step(UV.y - water_edge.y * 0.05, 0.05)); //Top edge
+	
+	COLOR = color;
+}"
+
+[sub_resource type="OpenSimplexNoise" id=11]
+
+[sub_resource type="NoiseTexture" id=29]
+noise = SubResource( 11 )
+
+[sub_resource type="OpenSimplexNoise" id=28]
+
+[sub_resource type="NoiseTexture" id=24]
+noise = SubResource( 28 )
+
+[sub_resource type="ShaderMaterial" id=25]
+shader = SubResource( 10 )
+shader_param/scale = Vector2( 12.855, 122.206 )
+shader_param/zoom = 0.793701
+shader_param/gap_stretch = Vector2( 1, 0.3 )
+shader_param/refraction_stretch = Vector2( 2, 0.8 )
+shader_param/refraction_strength = 0.003
+shader_param/water_tint = Color( 0.2, 0.6, 1, 0.239216 )
+shader_param/water_highlight = Color( 1, 1, 1, 0.3 )
+shader_param/speed = 0.1
+shader_param/flow_gaps = 0.22
+shader_param/highlight_width = 0.001
+shader_param/refraction_map = SubResource( 29 )
+shader_param/water_mask = SubResource( 24 )
+
+[sub_resource type="RectangleShape2D" id=36]
+extents = Vector2( 2057.5, 392.25 )
+
+[sub_resource type="RectangleShape2D" id=18]
+extents = Vector2( 18.5, 637.751 )
+
+[sub_resource type="RectangleShape2D" id=37]
+extents = Vector2( 3248.38, 67.5 )
+
+[sub_resource type="RectangleShape2D" id=44]
+extents = Vector2( 565, 50.75 )
+
+[sub_resource type="RectangleShape2D" id=14]
+extents = Vector2( 962, 4205 )
+
+[sub_resource type="Shader" id=15]
+code = "shader_type canvas_item;
+
+// Gonkee's fire shader for Godot 3 - full tutorial https://youtu.be/CI3JZ-3cabg
+// If you use this shader, I would prefer it if you gave credit to me and my channel
+
+uniform vec4 transparent : hint_color;
+uniform vec4 inner : hint_color;
+uniform vec4 outer : hint_color;
+
+uniform float inner_threshold = 0.4;
+uniform float outer_threshold = 0.15;
+uniform float soft_edge = 0.04;
+
+uniform vec2 center = vec2(0.5, 0.8);
+
+uniform int OCTAVES = 6;
+
+float rand(vec2 coord){
+	return fract(sin(dot(coord, vec2(12.9898, 78.233)))* 43758.5453123);
+}
+
+float noise(vec2 coord){
+	vec2 i = floor(coord);
+	vec2 f = fract(coord);
+
+	// 4 corners of a rectangle surrounding our point
+	float a = rand(i);
+	float b = rand(i + vec2(1.0, 0.0));
+	float c = rand(i + vec2(0.0, 1.0));
+	float d = rand(i + vec2(1.0, 1.0));
+
+	vec2 cubic = f * f * (3.0 - 2.0 * f);
+
+	return mix(a, b, cubic.x) + (c - a) * cubic.y * (1.0 - cubic.x) + (d - b) * cubic.x * cubic.y;
+}
+
+float fbm(vec2 coord){
+	float value = 0.0;
+	float scale = 0.5;
+
+	for(int i = 0; i < OCTAVES; i++){
+		value += noise(coord) * scale;
+		coord *= 2.0;
+		scale *= 0.5;
+	}
+	return value;
+}
+
+float overlay(float base, float top) {
+	if (base < 0.5) {
+		return 2.0 * base * top;
+	} else {
+		return 1.0 - 2.0 * (1.0 - base) * (1.0 - top);
+	}
+}
+
+float egg_shape(vec2 coord, float radius){
+	vec2 diff = abs(coord - center);
+
+	if (coord.y < center.y){
+		diff.y /= 2.0;
+	} else {
+		diff.y *= 2.0;
+	}
+
+	float dist = sqrt(diff.x * diff.x + diff.y * diff.y) / radius;
+	float value = sqrt(1.0 - dist * dist);
+	return clamp(value, 0.0, 1.0);
+}
+
+void fragment() {
+	vec2 coord = UV * 8.0;
+	vec2 fbmcoord = coord / 6.0;
+
+	float egg_s = egg_shape(UV, 0.4);
+	egg_s += egg_shape(UV, 0.2) / 2.0;
+
+	float noise1 = noise(coord + vec2(TIME * 0.25, TIME * 4.0));
+	float noise2 = noise(coord + vec2(TIME * 0.5, TIME * 7.0));
+	float combined_noise = (noise1 + noise2) / 2.0;
+
+	float fbm_noise = fbm(fbmcoord + vec2(0.0, TIME * 3.0));
+	fbm_noise = overlay(fbm_noise, UV.y);
+
+	float everything_combined = combined_noise * fbm_noise * egg_s;
+
+	if (everything_combined < outer_threshold){
+		COLOR = transparent;
+	} else if (everything_combined < outer_threshold + soft_edge){
+		COLOR = mix(transparent, outer, (everything_combined - outer_threshold) / soft_edge);
+	} else if (everything_combined < inner_threshold){
+		COLOR = outer;
+	} else if (everything_combined < inner_threshold + soft_edge){
+		COLOR = mix(outer, inner, (everything_combined - inner_threshold) / soft_edge);
+	} else {
+		COLOR = inner;
+	}
+
+	//COLOR = vec4(vec3(everything_combined), 1.0);
+}"
+
+[sub_resource type="ShaderMaterial" id=16]
+shader = SubResource( 15 )
+shader_param/transparent = Color( 1, 1, 1, 0 )
+shader_param/inner = Color( 0.788235, 0.780392, 0.215686, 1 )
+shader_param/outer = Color( 0.729412, 0.137255, 0.121569, 1 )
+shader_param/inner_threshold = 0.4
+shader_param/outer_threshold = 0.15
+shader_param/soft_edge = 0.01
+shader_param/center = Vector2( 0.5, 0.8 )
+shader_param/OCTAVES = 11
+
+[sub_resource type="Animation" id=17]
+resource_name = "move"
+length = 19.0
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 18.9 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ Vector2( -2459, -570 ), Vector2( 4617.3, -570 ) ]
+}
+
+[node name="Level_Two" type="Node2D"]
+position = Vector2( 400, -142 )
+
+[node name="Environment" type="Node2D" parent="."]
+
+[node name="Sea" type="Node2D" parent="Environment"]
+position = Vector2( -1063, 159 )
+
+[node name="Sky5" type="Sprite" parent="Environment/Sea"]
+modulate = Color( 0, 0, 0, 1 )
+position = Vector2( 6121, 798.999 )
+scale = Vector2( 9.11328, 1.84635 )
+texture = ExtResource( 10 )
+
+[node name="Sky4" type="Sprite" parent="Environment/Sea"]
+modulate = Color( 0.172549, 0.192157, 0.270588, 1 )
+position = Vector2( 5648.5, 798.999 )
+scale = Vector2( 3.74121, 1.84635 )
+texture = ExtResource( 10 )
+
+[node name="Rockleft" type="Sprite" parent="Environment/Sea"]
+position = Vector2( 4603, 740 )
+scale = Vector2( 1.7, 1.7 )
+texture = ExtResource( 2 )
+
+[node name="Rockright" type="Sprite" parent="Environment/Sea"]
+position = Vector2( 6696, 741 )
+scale = Vector2( 1.7, 1.7 )
+texture = ExtResource( 2 )
+flip_h = true
+
+[node name="Seafloor" type="Sprite" parent="Environment/Sea"]
+position = Vector2( 4485, 1142 )
+texture = ExtResource( 13 )
+
+[node name="Seafloor4" type="Sprite" parent="Environment/Sea"]
+modulate = Color( 0.282353, 0.282353, 0.282353, 1 )
+position = Vector2( 3263, 1146 )
+texture = ExtResource( 13 )
+
+[node name="Seafloor2" type="Sprite" parent="Environment/Sea"]
+position = Vector2( 5716, 1129.5 )
+scale = Vector2( 1, 1.05 )
+texture = ExtResource( 13 )
+
+[node name="Seafloor5" type="Sprite" parent="Environment/Sea"]
+modulate = Color( 0.282353, 0.282353, 0.282353, 1 )
+position = Vector2( 8031, 1138 )
+texture = ExtResource( 13 )
+
+[node name="Seafloor3" type="Sprite" parent="Environment/Sea"]
+position = Vector2( 6866.5, 1129.5 )
+scale = Vector2( 0.93, 1.05 )
+texture = ExtResource( 13 )
+
+[node name="Grass" type="Sprite" parent="Environment/Sea"]
+position = Vector2( 4408, 1107 )
+texture = ExtResource( 8 )
+
+[node name="Grass2" type="Sprite" parent="Environment/Sea"]
+position = Vector2( 6756, 1097 )
+texture = ExtResource( 8 )
+
+[node name="Seaweed" type="AnimatedSprite" parent="Environment/Sea"]
+position = Vector2( 4687, 1144 )
+frames = SubResource( 26 )
+playing = true
+
+[node name="Seaweed2" type="AnimatedSprite" parent="Environment/Sea"]
+position = Vector2( 6395, 1139 )
+frames = SubResource( 26 )
+frame = 1
+playing = true
+
+[node name="Coral" type="Sprite" parent="Environment/Sea"]
+position = Vector2( 5654, 1159 )
+texture = ExtResource( 15 )
+
+[node name="Coral2" type="Sprite" parent="Environment/Sea"]
+position = Vector2( 5105, 1085 )
+texture = ExtResource( 15 )
+
+[node name="Starfish" type="Sprite" parent="Environment/Sea"]
+position = Vector2( 5431, 1280 )
+texture = ExtResource( 11 )
+
+[node name="Starfish2" type="Sprite" parent="Environment/Sea"]
+position = Vector2( 6476, 1279 )
+texture = ExtResource( 11 )
+flip_h = true
+
+[node name="Sky" type="Node2D" parent="Environment"]
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="Environment/Sky"]
+
+[node name="ParallaxLayer" type="ParallaxLayer" parent="Environment/Sky/ParallaxBackground"]
+
+[node name="Sky" type="Sprite" parent="Environment/Sky/ParallaxBackground/ParallaxLayer"]
+position = Vector2( 4486, -329 )
+scale = Vector2( 12.3413, 6.18881 )
+texture = ExtResource( 10 )
+
+[node name="CloudBack" type="ParallaxLayer" parent="Environment/Sky/ParallaxBackground"]
+position = Vector2( 3044, -829 )
+motion_scale = Vector2( 0.9, 1 )
+
+[node name="Cloudback" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudBack"]
+position = Vector2( -42, -4 )
+texture = ExtResource( 9 )
+
+[node name="Cloudback2" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudBack"]
+position = Vector2( -374, 504 )
+texture = ExtResource( 9 )
+flip_h = true
+
+[node name="Cloudback3" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudBack"]
+position = Vector2( -2097.5, 225 )
+texture = ExtResource( 9 )
+flip_h = true
+
+[node name="Cloudback4" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudBack"]
+position = Vector2( 1287, 182 )
+texture = ExtResource( 9 )
+
+[node name="Cloudback5" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudBack"]
+position = Vector2( -2305, -245 )
+texture = ExtResource( 9 )
+
+[node name="Cloudback6" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudBack"]
+position = Vector2( -3642, 561 )
+texture = ExtResource( 9 )
+
+[node name="Cloudback7" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudBack"]
+position = Vector2( -1423, -33 )
+texture = ExtResource( 9 )
+
+[node name="Cloudback9" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudBack"]
+position = Vector2( 4787, 1062 )
+texture = ExtResource( 9 )
+
+[node name="Cloudback10" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudBack"]
+position = Vector2( 5936, 995 )
+texture = ExtResource( 9 )
+
+[node name="Cloudback11" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudBack"]
+position = Vector2( -2436, 644 )
+texture = ExtResource( 9 )
+
+[node name="Cloudback8" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudBack"]
+position = Vector2( 3543, 1046 )
+texture = ExtResource( 9 )
+
+[node name="Cloudback12" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudBack"]
+position = Vector2( 2046, 1548 )
+texture = ExtResource( 9 )
+
+[node name="Cloudback13" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudBack"]
+position = Vector2( 3412, 1416 )
+texture = ExtResource( 9 )
+
+[node name="CloudFront" type="ParallaxLayer" parent="Environment/Sky/ParallaxBackground"]
+motion_scale = Vector2( 0.8, 1 )
+
+[node name="Cloudfront2" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudFront"]
+position = Vector2( 712, -1077 )
+texture = ExtResource( 14 )
+
+[node name="Cloudfront3" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudFront"]
+position = Vector2( 1640, -860 )
+texture = ExtResource( 14 )
+
+[node name="Cloudfront4" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudFront"]
+position = Vector2( 2676, -318 )
+texture = ExtResource( 14 )
+flip_h = true
+
+[node name="Cloudfront5" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudFront"]
+position = Vector2( 987.5, -602 )
+texture = ExtResource( 14 )
+flip_h = true
+
+[node name="Cloudfront8" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudFront"]
+position = Vector2( 2938, -815 )
+texture = ExtResource( 14 )
+
+[node name="Cloudfront9" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudFront"]
+position = Vector2( -622, -273 )
+texture = ExtResource( 14 )
+
+[node name="Cloudfront10" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudFront"]
+position = Vector2( 4260, -637 )
+texture = ExtResource( 14 )
+
+[node name="Cloudfront11" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudFront"]
+position = Vector2( 7758, 251 )
+texture = ExtResource( 14 )
+
+[node name="Cloudfront12" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudFront"]
+position = Vector2( 8901, 238 )
+texture = ExtResource( 14 )
+
+[node name="Cloudfront13" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudFront"]
+position = Vector2( 6516, 227 )
+texture = ExtResource( 14 )
+
+[node name="Cloudfront14" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudFront"]
+position = Vector2( 5019, 729 )
+texture = ExtResource( 14 )
+
+[node name="Cloudfront15" type="Sprite" parent="Environment/Sky/ParallaxBackground/CloudFront"]
+position = Vector2( 6385, 597 )
+texture = ExtResource( 14 )
+
+[node name="Player" type="KinematicBody2D" parent="."]
+position = Vector2( -1533, 27 )
+script = ExtResource( 27 )
+
+[node name="CaterCollide" type="CollisionShape2D" parent="Player"]
+position = Vector2( -4.11893, 1.88107 )
+rotation = 1.5708
+shape = SubResource( 1 )
+
+[node name="ButterCollide" type="CollisionShape2D" parent="Player"]
+position = Vector2( -4.11893, 1.88107 )
+shape = SubResource( 7 )
+disabled = true
+
+[node name="FishCollide" type="CollisionShape2D" parent="Player"]
+position = Vector2( -4.11893, 1.88107 )
+rotation = 1.5708
+shape = SubResource( 8 )
+disabled = true
+
+[node name="EnvState" type="Node2D" parent="Player"]
+script = ExtResource( 28 )
+
+[node name="StateMachine" type="Node2D" parent="Player"]
+material = SubResource( 41 )
+script = ExtResource( 29 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Player/StateMachine"]
+anims/Death = SubResource( 12 )
+anims/RESET = SubResource( 42 )
+
+[node name="AnimatedSprite" type="AnimatedSprite" parent="Player/StateMachine"]
+use_parent_material = true
+scale = Vector2( 0.251461, 0.204505 )
+frames = SubResource( 4 )
+animation = "Idle"
+
+[node name="Jump" type="AudioStreamPlayer" parent="Player/StateMachine"]
+stream = ExtResource( 35 )
+bus = "SFX"
+
+[node name="Fly" type="AudioStreamPlayer" parent="Player/StateMachine"]
+stream = ExtResource( 36 )
+bus = "SFX"
+
+[node name="Land" type="AudioStreamPlayer" parent="Player/StateMachine"]
+stream = ExtResource( 34 )
+bus = "SFX"
+
+[node name="Dash" type="AudioStreamPlayer" parent="Player/StateMachine"]
+stream = ExtResource( 26 )
+bus = "SFX"
+
+[node name="Swim" type="AudioStreamPlayer" parent="Player/StateMachine"]
+stream = ExtResource( 25 )
+bus = "SFX"
+
+[node name="Change" type="AudioStreamPlayer" parent="Player/StateMachine"]
+stream = ExtResource( 42 )
+bus = "SFX"
+
+[node name="Death" type="AudioStreamPlayer" parent="Player/StateMachine"]
+stream = ExtResource( 33 )
+bus = "SFX"
+
+[node name="InWater" type="AudioStreamPlayer" parent="Player/StateMachine"]
+stream = ExtResource( 44 )
+bus = "SFX"
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+current = true
+zoom = Vector2( 1.2, 1 )
+limit_left = -1700
+limit_bottom = 1550
+smoothing_enabled = true
+smoothing_speed = 10.0
+
+[node name="ScreenShake" type="Node" parent="Player/Camera2D"]
+script = ExtResource( 30 )
+
+[node name="Frequency" type="Timer" parent="Player/Camera2D/ScreenShake"]
+
+[node name="Duration" type="Timer" parent="Player/Camera2D/ScreenShake"]
+one_shot = true
+
+[node name="ShakeTween" type="Tween" parent="Player/Camera2D/ScreenShake"]
+
+[node name="Transition" type="Timer" parent="Player"]
+wait_time = 0.2
+one_shot = true
+
+[node name="DashCD" type="Timer" parent="Player"]
+wait_time = 1.4
+one_shot = true
+
+[node name="DashTimer" type="Timer" parent="Player"]
+wait_time = 0.3
+one_shot = true
+
+[node name="TextureProgress" type="TextureProgress" parent="Player"]
+visible = false
+margin_left = -93.4388
+margin_top = 34.7058
+margin_right = 406.561
+margin_bottom = 84.7058
+rect_scale = Vector2( 0.4, 0.4 )
+max_value = 0.7
+step = 0.01
+texture_under = ExtResource( 39 )
+texture_progress = ExtResource( 43 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="DeathTimer" type="Timer" parent="Player"]
+
+[node name="Area2D" type="Area2D" parent="Player" groups=["player"]]
+
+[node name="CaterCollide" type="CollisionShape2D" parent="Player/Area2D"]
+position = Vector2( -2, 1 )
+rotation = 1.5708
+shape = SubResource( 5 )
+
+[node name="ButterCollide" type="CollisionShape2D" parent="Player/Area2D"]
+position = Vector2( -4.11893, 1.88107 )
+shape = SubResource( 6 )
+disabled = true
+
+[node name="FishCollide" type="CollisionShape2D" parent="Player/Area2D"]
+position = Vector2( -4.11893, 1.88107 )
+rotation = 1.5708
+shape = SubResource( 9 )
+disabled = true
+
+[node name="Passes" type="Node2D" parent="."]
+
+[node name="AirPass" parent="Passes" instance=ExtResource( 6 )]
+position = Vector2( -682, -767 )
+
+[node name="GroundPass" parent="Passes" instance=ExtResource( 21 )]
+position = Vector2( 1030, -995 )
+rotation = 1.5708
+
+[node name="GroundPass2" parent="Passes" instance=ExtResource( 21 )]
+position = Vector2( 5999, 317 )
+
+[node name="SeaPass" parent="Passes" instance=ExtResource( 20 )]
+position = Vector2( 3030, 156 )
+
+[node name="LevelChange" parent="Passes" instance=ExtResource( 24 )]
+position = Vector2( 6963, 13 )
+next_level = "res://Scenes/Level_Three.tscn"
+
+[node name="Platforms" type="Node2D" parent="."]
+
+[node name="Platform" parent="Platforms" instance=ExtResource( 7 )]
+position = Vector2( -1665, 65 )
+
+[node name="Platform2" parent="Platforms" instance=ExtResource( 7 )]
+position = Vector2( -1065, -17 )
+
+[node name="Platform5" parent="Platforms" instance=ExtResource( 4 )]
+position = Vector2( 5916, 142 )
+
+[node name="Platform6" parent="Platforms" instance=ExtResource( 7 )]
+position = Vector2( 6503, 52 )
+
+[node name="Platform3" parent="Platforms" instance=ExtResource( 7 )]
+position = Vector2( 988, -338 )
+
+[node name="Platform4" parent="Platforms" instance=ExtResource( 7 )]
+position = Vector2( 1582, -197 )
+
+[node name="Platform7" parent="Platforms" instance=ExtResource( 7 )]
+position = Vector2( 2316, -97 )
+
+[node name="Pillar" parent="Platforms" instance=ExtResource( 3 )]
+position = Vector2( -239, -1120 )
+
+[node name="Pillar2" parent="Platforms" instance=ExtResource( 3 )]
+position = Vector2( 96, -1254 )
+
+[node name="CollisionShape2D2" parent="Platforms/Pillar2" index="3"]
+position = Vector2( 60, 634.5 )
+shape = SubResource( 38 )
+
+[node name="Pillar3" parent="Platforms" instance=ExtResource( 3 )]
+position = Vector2( 453, -965 )
+
+[node name="CollisionShape2D" parent="Platforms/Pillar3" index="2"]
+position = Vector2( 59.5, -65 )
+shape = SubResource( 43 )
+
+[node name="Pillarextend" type="Sprite" parent="Platforms/Pillar3"]
+position = Vector2( 134, -255 )
+scale = Vector2( 0.757, 0.479 )
+texture = ExtResource( 46 )
+
+[node name="Pillarextend2" type="Sprite" parent="Platforms/Pillar3"]
+position = Vector2( 134, -390 )
+scale = Vector2( 0.757, 0.479 )
+texture = ExtResource( 46 )
+
+[node name="Pillar4" parent="Platforms" instance=ExtResource( 3 )]
+position = Vector2( 834, -1119 )
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="Spikes" parent="Enemies" instance=ExtResource( 5 )]
+position = Vector2( -1183, 22 )
+
+[node name="Spikes2" parent="Enemies" instance=ExtResource( 5 )]
+position = Vector2( -813, -61 )
+
+[node name="Spikes3" parent="Enemies" instance=ExtResource( 5 )]
+position = Vector2( 1462, -384 )
+
+[node name="Spikes4" parent="Enemies" instance=ExtResource( 5 )]
+position = Vector2( 2065, -239 )
+
+[node name="Spikes5" parent="Enemies" instance=ExtResource( 5 )]
+position = Vector2( 2802, -147 )
+
+[node name="Mine" parent="Enemies" instance=ExtResource( 22 )]
+position = Vector2( 3244, 830 )
+
+[node name="Mine2" parent="Enemies" instance=ExtResource( 22 )]
+position = Vector2( 3501, 948 )
+
+[node name="Mine3" parent="Enemies" instance=ExtResource( 22 )]
+position = Vector2( 3753, 845 )
+
+[node name="Mine4" parent="Enemies" instance=ExtResource( 22 )]
+position = Vector2( 4012, 989 )
+
+[node name="Mine5" parent="Enemies" instance=ExtResource( 22 )]
+position = Vector2( 4207, 376 )
+
+[node name="Mine6" parent="Enemies" instance=ExtResource( 22 )]
+position = Vector2( 4499, 357 )
+
+[node name="Mine7" parent="Enemies" instance=ExtResource( 22 )]
+position = Vector2( 4724, 588 )
+
+[node name="Mine8" parent="Enemies" instance=ExtResource( 22 )]
+position = Vector2( 4939, 777 )
+
+[node name="Mine9" parent="Enemies" instance=ExtResource( 22 )]
+position = Vector2( 5199, 869 )
+
+[node name="Mine10" parent="Enemies" instance=ExtResource( 22 )]
+position = Vector2( 5447, 1296 )
+
+[node name="Mine11" parent="Enemies" instance=ExtResource( 22 )]
+position = Vector2( 5684, 1042 )
+
+[node name="Mine12" parent="Enemies" instance=ExtResource( 22 )]
+position = Vector2( 5891, 948 )
+
+[node name="Mine13" parent="Enemies" instance=ExtResource( 22 )]
+position = Vector2( 6195, 1089 )
+
+[node name="Elevator" type="Node2D" parent="."]
+
+[node name="UpStream" parent="Elevator" instance=ExtResource( 23 )]
+position = Vector2( 6166, 624 )
+
+[node name="Fan" parent="Elevator" instance=ExtResource( 16 )]
+position = Vector2( -561, -69 )
+
+[node name="Ocean" type="Area2D" parent="." groups=["ocean"]]
+position = Vector2( 4513, 752 )
+rotation = -1.5708
+scale = Vector2( 2, 1 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ocean"]
+visible = false
+position = Vector2( -82.7505, 218.5 )
+shape = SubResource( 23 )
+
+[node name="Waterfall" type="Sprite" parent="Ocean"]
+material = SubResource( 25 )
+position = Vector2( -119.64, 35.3362 )
+scale = Vector2( 12.855, 143.735 )
+texture = ExtResource( 19 )
+script = ExtResource( 18 )
+
+[node name="Sky5" type="Sprite" parent="Ocean"]
+modulate = Color( 0.109804, 0.101961, 0.101961, 1 )
+position = Vector2( -427.25, 217.497 )
+rotation = 1.5708
+scale = Vector2( 3.74121, 0.0787751 )
+texture = ExtResource( 10 )
+
+[node name="Blocks" type="Node2D" parent="."]
+
+[node name="Area2D3" type="Area2D" parent="Blocks" groups=["enemy"]]
+position = Vector2( -1973, -379 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Blocks/Area2D3"]
+position = Vector2( 2380.5, -1214 )
+shape = SubResource( 36 )
+
+[node name="Area2D6" type="StaticBody2D" parent="Blocks" groups=["enemy"]]
+position = Vector2( 6240, 1856 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Blocks/Area2D6"]
+position = Vector2( 275, -959 )
+shape = SubResource( 18 )
+
+[node name="Area2D7" type="StaticBody2D" parent="Blocks" groups=["enemy"]]
+position = Vector2( -1975, 747 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Blocks/Area2D7"]
+position = Vector2( 275, -959 )
+shape = SubResource( 18 )
+
+[node name="Area2D8" type="StaticBody2D" parent="Blocks" groups=["enemy"]]
+position = Vector2( 2654, 1958 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Blocks/Area2D8"]
+position = Vector2( 279.5, -1043.5 )
+shape = SubResource( 18 )
+
+[node name="Area2D" type="Area2D" parent="Blocks" groups=["enemy"]]
+position = Vector2( 1755, 1562 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Blocks/Area2D"]
+position = Vector2( 2159.5, 57.5 )
+shape = SubResource( 37 )
+
+[node name="Area2D5" type="Area2D" parent="Blocks" groups=["enemy"]]
+position = Vector2( -4343, 231 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Blocks/Area2D5"]
+position = Vector2( 3563.25, -1 )
+shape = SubResource( 37 )
+
+[node name="Area2D9" type="Area2D" parent="Blocks" groups=["enemy"]]
+position = Vector2( -4343, 231 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Blocks/Area2D9"]
+position = Vector2( 4654.5, -599.75 )
+shape = SubResource( 44 )
+
+[node name="Predator" type="Area2D" parent="." groups=["enemy"]]
+position = Vector2( -2459, -570 )
+script = ExtResource( 17 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Predator"]
+position = Vector2( -309, 488 )
+shape = SubResource( 14 )
+
+[node name="Icon" type="Sprite" parent="Predator"]
+material = SubResource( 16 )
+position = Vector2( 80, 781 )
+scale = Vector2( 30.8437, 132.406 )
+texture = ExtResource( 19 )
+
+[node name="Icon2" type="Sprite" parent="Predator"]
+material = SubResource( 16 )
+position = Vector2( -71, -3622 )
+scale = Vector2( 30.8437, 244.25 )
+texture = ExtResource( 19 )
+
+[node name="Icon3" type="Sprite" parent="Predator"]
+material = SubResource( 16 )
+position = Vector2( -1122, -2513 )
+scale = Vector2( 30.8437, 244.25 )
+texture = ExtResource( 19 )
+
+[node name="Icon4" type="Sprite" parent="Predator"]
+material = SubResource( 16 )
+position = Vector2( -1058, -3649 )
+scale = Vector2( 30.8437, 244.25 )
+texture = ExtResource( 19 )
+
+[node name="Icon5" type="Sprite" parent="Predator"]
+material = SubResource( 16 )
+position = Vector2( -1986, -2289 )
+scale = Vector2( 30.8437, 244.25 )
+texture = ExtResource( 19 )
+
+[node name="Icon6" type="Sprite" parent="Predator"]
+material = SubResource( 16 )
+position = Vector2( -1010, -5153 )
+scale = Vector2( 30.8437, 244.25 )
+texture = ExtResource( 19 )
+
+[node name="Icon7" type="Sprite" parent="Predator"]
+material = SubResource( 16 )
+position = Vector2( -2754, -5297 )
+scale = Vector2( 30.8437, 244.25 )
+texture = ExtResource( 19 )
+
+[node name="Timer" type="Timer" parent="Predator"]
+wait_time = 1.3
+autostart = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Predator"]
+anims/move = SubResource( 17 )
+
+[connection signal="timeout" from="Player/Camera2D/ScreenShake/Frequency" to="Player/Camera2D/ScreenShake" method="_on_Frequency_timeout"]
+[connection signal="timeout" from="Player/Camera2D/ScreenShake/Duration" to="Player/Camera2D/ScreenShake" method="_on_Duration_timeout"]
+[connection signal="timeout" from="Player/Transition" to="Player" method="_on_Transition_timeout"]
+[connection signal="timeout" from="Player/DashCD" to="Player" method="_on_DashCD_timeout"]
+[connection signal="timeout" from="Player/DashTimer" to="Player" method="_on_DashTimer_timeout"]
+[connection signal="timeout" from="Player/DeathTimer" to="Player" method="_on_DeathTimer_timeout"]
+[connection signal="area_entered" from="Player/Area2D" to="Player" method="_on_Area2D_area_entered"]
+[connection signal="area_exited" from="Player/Area2D" to="Player" method="_on_Area2D_area_exited"]
+[connection signal="item_rect_changed" from="Ocean/Waterfall" to="Ocean/Waterfall" method="_on_Waterfall_item_rect_changed"]
+[connection signal="timeout" from="Predator/Timer" to="Predator" method="_on_Timer_timeout"]
+
+[editable path="Platforms/Pillar2"]
+[editable path="Platforms/Pillar3"]

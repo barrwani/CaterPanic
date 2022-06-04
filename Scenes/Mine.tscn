@@ -1,0 +1,152 @@
+[gd_scene load_steps=17 format=2]
+
+[ext_resource path="res://Sprites/explosion-6.png" type="Texture" id=1]
+[ext_resource path="res://Sprites/bomb.png" type="Texture" id=2]
+[ext_resource path="res://Scripts/SeaMine.gd" type="Script" id=3]
+[ext_resource path="res://Sprites/chain.png" type="Texture" id=4]
+[ext_resource path="res://SFX/explode.wav" type="AudioStream" id=5]
+
+[sub_resource type="AtlasTexture" id=4]
+atlas = ExtResource( 1 )
+region = Rect2( 0, 0, 96, 96 )
+
+[sub_resource type="AtlasTexture" id=5]
+atlas = ExtResource( 1 )
+region = Rect2( 96, 0, 96, 96 )
+
+[sub_resource type="AtlasTexture" id=6]
+atlas = ExtResource( 1 )
+region = Rect2( 192, 0, 96, 96 )
+
+[sub_resource type="AtlasTexture" id=7]
+atlas = ExtResource( 1 )
+region = Rect2( 288, 0, 96, 96 )
+
+[sub_resource type="AtlasTexture" id=8]
+atlas = ExtResource( 1 )
+region = Rect2( 384, 0, 96, 96 )
+
+[sub_resource type="AtlasTexture" id=9]
+atlas = ExtResource( 1 )
+region = Rect2( 480, 0, 96, 96 )
+
+[sub_resource type="AtlasTexture" id=10]
+atlas = ExtResource( 1 )
+region = Rect2( 576, 0, 96, 96 )
+
+[sub_resource type="AtlasTexture" id=11]
+atlas = ExtResource( 1 )
+region = Rect2( 672, 0, 96, 96 )
+
+[sub_resource type="SpriteFrames" id=3]
+animations = [ {
+"frames": [ ExtResource( 2 ) ],
+"loop": true,
+"name": "Idle",
+"speed": 5.0
+}, {
+"frames": [ SubResource( 4 ), SubResource( 5 ), SubResource( 6 ), SubResource( 7 ), SubResource( 8 ), SubResource( 9 ), SubResource( 10 ), SubResource( 11 ) ],
+"loop": false,
+"name": "Explode",
+"speed": 13.0
+} ]
+
+[sub_resource type="CircleShape2D" id=1]
+radius = 11.4264
+
+[sub_resource type="Animation" id=2]
+resource_name = "Default"
+length = 8.0
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 2, 4, 6, 8 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1 ),
+"update": 0,
+"values": [ Vector2( -5, 5 ), Vector2( 0, 0 ), Vector2( 5, 5 ), Vector2( 0, 0 ), Vector2( -5, 5 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath(".:rotation_degrees")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 2, 4, 6, 8 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1 ),
+"update": 0,
+"values": [ -5.0, 0.0, 5.0, 0.0, -5.0 ]
+}
+
+[node name="Mine" type="Node2D"]
+scale = Vector2( 2, 2 )
+
+[node name="Area2D" type="Area2D" parent="." groups=["bomb", "enemy"]]
+position = Vector2( -5, 5 )
+rotation = -0.0872665
+scale = Vector2( 4, 4 )
+script = ExtResource( 3 )
+
+[node name="AnimatedSprite" type="AnimatedSprite" parent="Area2D"]
+position = Vector2( 2.02355, 2.68659 )
+scale = Vector2( 0.6, 0.6 )
+frames = SubResource( 3 )
+animation = "Idle"
+playing = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource( 1 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Area2D"]
+autoplay = "Default"
+anims/Default = SubResource( 2 )
+
+[node name="AnimTimer" type="Timer" parent="Area2D"]
+wait_time = 0.3
+
+[node name="Chain" type="Sprite" parent="Area2D"]
+show_behind_parent = true
+position = Vector2( 40.9969, 41.9829 )
+scale = Vector2( 0.1, 0.1 )
+texture = ExtResource( 4 )
+
+[node name="Chain2" type="Sprite" parent="Area2D"]
+show_behind_parent = true
+position = Vector2( 41.1314, 94.9461 )
+scale = Vector2( 0.1, 0.1 )
+texture = ExtResource( 4 )
+
+[node name="Chain3" type="Sprite" parent="Area2D"]
+show_behind_parent = true
+position = Vector2( 41.764, 147.953 )
+scale = Vector2( 0.1, 0.1 )
+texture = ExtResource( 4 )
+
+[node name="Chain4" type="Sprite" parent="Area2D"]
+show_behind_parent = true
+position = Vector2( 41.764, 147.953 )
+scale = Vector2( 0.1, 0.1 )
+texture = ExtResource( 4 )
+
+[node name="Chain5" type="Sprite" parent="Area2D"]
+show_behind_parent = true
+position = Vector2( 41.7895, 202.161 )
+scale = Vector2( 0.1, 0.1 )
+texture = ExtResource( 4 )
+
+[node name="Chain6" type="Sprite" parent="Area2D"]
+show_behind_parent = true
+position = Vector2( 41.8586, 255.872 )
+scale = Vector2( 0.1, 0.1 )
+texture = ExtResource( 4 )
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="Area2D"]
+stream = ExtResource( 5 )
+bus = "SFX"
+
+[connection signal="timeout" from="Area2D/AnimTimer" to="Area2D" method="_on_AnimTimer_timeout"]

@@ -32,17 +32,17 @@ func _enter_state(new_state, old_state):
 	match new_state:
 		states.ground:
 			emit_signal("ground")
-			$Label.text = "Ground"
+
 			##Animation Player effect
 			pass
 		states.air:
 			emit_signal("air")
-			$Label.text = "Air"
+
 			##Animation Player effect
 			pass
 		states.sea:
 			emit_signal("sea")
-			$Label.text = "Sea"
+
 			##Animation Player effect
 			pass
 

@@ -15,6 +15,10 @@ func _ready():
 func _input(event):
 	if [states.idle, states.run, states.jump, states.fall].has(state):
 		if event.is_action_pressed("up") && (! parent.jumping || ( parent.air || parent.sea)):
+			if parent.air:
+				$Fly.play()
+			elif parent.sea:
+				$Swim.play()
 			parent.jumping = true
 			parent.jump()
 
@@ -102,23 +106,42 @@ func _get_transition(delta):
 func _enter_state(new_state, old_state):
 	match new_state:
 		states.idle:
-			$Label.text = "Idle"
-			$AnimatedSprite.play("Idle")
+			if parent.ground:
+				if ! parent.was_on_floor:
+					$Land.play()
+				$AnimatedSprite.play("Idle")
+			elif parent.sea:
+				$AnimatedSprite.play("Fish")
+			elif parent.air:
+				$AnimatedSprite.play("Bidle")
 		states.run:
-			$Label.text = "Run"
-			$AnimatedSprite.play("Run")
+			if parent.ground:
+				$AnimatedSprite.play("Run")
+			elif parent.sea:
+				$AnimatedSprite.play("Fish")
 		states.jump:
-			$Label.text = "Jump"
-			$AnimatedSprite.play("Jump")
+			if parent.ground:
+				$Jump.play()
+				$AnimatedSprite.play("Jump")
+			elif parent.air:
+				$AnimatedSprite.play("Bjump")
+
 		states.dead:
-			$Label.text = "Dead"
+			$AnimationPlayer.play("Death")
+			$Death.play()
 		states.fall:
-			$Label.text = "Fall"
-			$AnimatedSprite.play("Fall")
+			if parent.ground:
+				$AnimatedSprite.play("Fall")
+			elif parent.air:
+				$AnimatedSprite.play("Bidle")
 		states.transition:
-			$Label.text = "Transition"
+			$Change.play()
 		states.dash:
-			$Label.text = "Dash"
+			if parent.air:
+				$AnimatedSprite.play("Bjump")
+			elif parent.sea:
+				$AnimatedSprite.play("FastFish")
+				$Dash.play()
 
 
 func _exit_state(old_state, new_state):

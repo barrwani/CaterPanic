@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=2]
+[gd_scene load_steps=35 format=2]
 
 [ext_resource path="res://Sprites/1.png" type="Texture" id=1]
 [ext_resource path="res://Sprites/2.png" type="Texture" id=2]
@@ -9,105 +9,213 @@
 [ext_resource path="res://Scripts/EnvState.gd" type="Script" id=7]
 [ext_resource path="res://UI/back.png" type="Texture" id=8]
 [ext_resource path="res://UI/front.png" type="Texture" id=9]
+[ext_resource path="res://Sprites/f1.png" type="Texture" id=10]
+[ext_resource path="res://Sprites/b0.png" type="Texture" id=11]
+[ext_resource path="res://Sprites/b1.png" type="Texture" id=12]
+[ext_resource path="res://Sprites/f0.png" type="Texture" id=13]
+[ext_resource path="res://SFX/jump.wav" type="AudioStream" id=14]
+[ext_resource path="res://SFX/land.wav" type="AudioStream" id=15]
+[ext_resource path="res://SFX/change.wav" type="AudioStream" id=16]
+[ext_resource path="res://SFX/death.wav" type="AudioStream" id=17]
+[ext_resource path="res://SFX/inwater.wav" type="AudioStream" id=18]
+[ext_resource path="res://SFX/fly.wav" type="AudioStream" id=19]
+[ext_resource path="res://SFX/fishjump.wav" type="AudioStream" id=20]
+[ext_resource path="res://SFX/dash.wav" type="AudioStream" id=21]
 
 [sub_resource type="CapsuleShape2D" id=1]
 radius = 24.4256
 height = 166.421
 
-[sub_resource type="Shader" id=2]
+[sub_resource type="CapsuleShape2D" id=7]
+radius = 50.1189
+height = 15.5243
+
+[sub_resource type="CapsuleShape2D" id=8]
+radius = 17.1189
+height = 116.0
+
+[sub_resource type="Shader" id=13]
 code = "shader_type canvas_item;
 
-uniform bool active = false;
+uniform sampler2D dissolve_texture : hint_albedo;
+uniform float dissolve_value : hint_range(0,1);
 
-void fragment() {
-	vec4 previous_color = texture(TEXTURE, UV);
-	vec4 white_color = vec4(1.0, 1.0, 1.0, previous_color.a);
-	vec4 new_color = previous_color;
-	if (active == true)
-	{
-		new_color = white_color
-	}
-	COLOR = new_color;
+void fragment(){
+    vec4 main_texture = texture(TEXTURE, UV);
+    vec4 noise_texture = texture(dissolve_texture, UV);
+    main_texture.a *= floor(dissolve_value + min(1, noise_texture.x));
+    COLOR = main_texture;
 }"
 
-[sub_resource type="ShaderMaterial" id=3]
-shader = SubResource( 2 )
-shader_param/active = false
+[sub_resource type="OpenSimplexNoise" id=15]
+
+[sub_resource type="NoiseTexture" id=16]
+noise = SubResource( 15 )
+
+[sub_resource type="ShaderMaterial" id=14]
+shader = SubResource( 13 )
+shader_param/dissolve_value = 1.0
+shader_param/dissolve_texture = SubResource( 16 )
+
+[sub_resource type="Animation" id=12]
+resource_name = "Death"
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:material:shader_param/dissolve_value")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ 1.0, 0.0 ]
+}
+
+[sub_resource type="Animation" id=17]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:material:shader_param/dissolve_value")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ 1.0 ]
+}
 
 [sub_resource type="SpriteFrames" id=4]
 animations = [ {
-"frames": [ ExtResource( 1 ), ExtResource( 3 ), ExtResource( 2 ) ],
+"frames": [ ExtResource( 3 ), ExtResource( 2 ) ],
 "loop": true,
-"name": "Run",
-"speed": 8.0
-}, {
-"frames": [ ExtResource( 3 ), ExtResource( 1 ), ExtResource( 2 ) ],
-"loop": true,
-"name": "Fall",
-"speed": 15.0
+"name": "Jump",
+"speed": 5.0
 }, {
 "frames": [ ExtResource( 1 ) ],
 "loop": true,
 "name": "Idle",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 3 ), ExtResource( 2 ) ],
+"frames": [ ExtResource( 1 ), ExtResource( 3 ), ExtResource( 2 ) ],
 "loop": true,
-"name": "Jump",
+"name": "Run",
+"speed": 8.0
+}, {
+"frames": [ ExtResource( 13 ), ExtResource( 10 ) ],
+"loop": true,
+"name": "FastFish",
+"speed": 20.0
+}, {
+"frames": [ ExtResource( 13 ), ExtResource( 10 ) ],
+"loop": true,
+"name": "Fish",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 3 ), ExtResource( 1 ), ExtResource( 2 ) ],
+"loop": true,
+"name": "Fall",
+"speed": 15.0
+}, {
+"frames": [ ExtResource( 12 ), ExtResource( 11 ), ExtResource( 11 ), ExtResource( 12 ), ExtResource( 11 ), ExtResource( 12 ) ],
+"loop": true,
+"name": "Bjump",
+"speed": 10.0
+}, {
+"frames": [ ExtResource( 11 ) ],
+"loop": true,
+"name": "Bidle",
 "speed": 5.0
 } ]
+
+[sub_resource type="CapsuleShape2D" id=5]
+radius = 24.9997
+height = 166.421
+
+[sub_resource type="CapsuleShape2D" id=6]
+radius = 52.1188
+height = 29.5245
+
+[sub_resource type="CapsuleShape2D" id=9]
+radius = 24.1189
+height = 114.0
 
 [node name="Player" type="KinematicBody2D"]
 script = ExtResource( 5 )
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CaterCollide" type="CollisionShape2D" parent="."]
 position = Vector2( -4.11893, 1.88107 )
 rotation = 1.5708
 shape = SubResource( 1 )
 
+[node name="ButterCollide" type="CollisionShape2D" parent="."]
+position = Vector2( -4.11893, 1.88107 )
+shape = SubResource( 7 )
+disabled = true
+
+[node name="FishCollide" type="CollisionShape2D" parent="."]
+position = Vector2( -4.11893, 1.88107 )
+rotation = 1.5708
+shape = SubResource( 8 )
+disabled = true
+
 [node name="EnvState" type="Node2D" parent="."]
 script = ExtResource( 7 )
 
-[node name="Label" type="Label" parent="EnvState"]
-margin_left = -106.0
-margin_top = -96.0
-margin_right = 102.0
-margin_bottom = -61.0
-text = "null"
-align = 1
-valign = 1
-uppercase = true
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
 [node name="StateMachine" type="Node2D" parent="."]
+material = SubResource( 14 )
 script = ExtResource( 6 )
 
+[node name="AnimationPlayer" type="AnimationPlayer" parent="StateMachine"]
+anims/Death = SubResource( 12 )
+anims/RESET = SubResource( 17 )
+
 [node name="AnimatedSprite" type="AnimatedSprite" parent="StateMachine"]
-material = SubResource( 3 )
+use_parent_material = true
 scale = Vector2( 0.251461, 0.204505 )
 frames = SubResource( 4 )
-animation = "Jump"
-frame = 1
+animation = "Fish"
 
-[node name="Label" type="Label" parent="StateMachine"]
-margin_left = -106.0
-margin_top = -67.0
-margin_right = 102.0
-margin_bottom = -32.0
-text = "null"
-align = 1
-valign = 1
-uppercase = true
-__meta__ = {
-"_edit_use_anchors_": false
-}
+[node name="Jump" type="AudioStreamPlayer" parent="StateMachine"]
+stream = ExtResource( 14 )
+bus = "SFX"
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="StateMachine"]
+[node name="Fly" type="AudioStreamPlayer" parent="StateMachine"]
+stream = ExtResource( 19 )
+bus = "SFX"
+
+[node name="Land" type="AudioStreamPlayer" parent="StateMachine"]
+stream = ExtResource( 15 )
+bus = "SFX"
+
+[node name="Change" type="AudioStreamPlayer" parent="StateMachine"]
+stream = ExtResource( 16 )
+bus = "SFX"
+
+[node name="Death" type="AudioStreamPlayer" parent="StateMachine"]
+stream = ExtResource( 17 )
+bus = "SFX"
+
+[node name="InWater" type="AudioStreamPlayer" parent="StateMachine"]
+stream = ExtResource( 18 )
+bus = "SFX"
+
+[node name="Swim" type="AudioStreamPlayer" parent="StateMachine"]
+stream = ExtResource( 20 )
+bus = "SFX"
+
+[node name="Dash" type="AudioStreamPlayer" parent="StateMachine"]
+stream = ExtResource( 21 )
+bus = "SFX"
 
 [node name="Camera2D" type="Camera2D" parent="."]
 current = true
+zoom = Vector2( 1.2, 1 )
+limit_bottom = 1955
+smoothing_enabled = true
+smoothing_speed = 10.0
 
 [node name="ScreenShake" type="Node" parent="Camera2D"]
 script = ExtResource( 4 )
@@ -124,7 +232,7 @@ wait_time = 0.2
 one_shot = true
 
 [node name="DashCD" type="Timer" parent="."]
-wait_time = 0.7
+wait_time = 1.4
 one_shot = true
 
 [node name="DashTimer" type="Timer" parent="."]
@@ -148,13 +256,29 @@ __meta__ = {
 
 [node name="DeathTimer" type="Timer" parent="."]
 
-[node name="climber" type="Timer" parent="."]
-wait_time = 0.01
-one_shot = true
+[node name="Area2D" type="Area2D" parent="." groups=["player"]]
+
+[node name="CaterCollide" type="CollisionShape2D" parent="Area2D"]
+position = Vector2( -2, 1 )
+rotation = 1.5708
+shape = SubResource( 5 )
+
+[node name="ButterCollide" type="CollisionShape2D" parent="Area2D"]
+position = Vector2( -4.11893, 1.88107 )
+shape = SubResource( 6 )
+disabled = true
+
+[node name="FishCollide" type="CollisionShape2D" parent="Area2D"]
+position = Vector2( -4.11893, 1.88107 )
+rotation = 1.5708
+shape = SubResource( 9 )
+disabled = true
 
 [connection signal="timeout" from="Camera2D/ScreenShake/Frequency" to="Camera2D/ScreenShake" method="_on_Frequency_timeout"]
 [connection signal="timeout" from="Camera2D/ScreenShake/Duration" to="Camera2D/ScreenShake" method="_on_Duration_timeout"]
 [connection signal="timeout" from="Transition" to="." method="_on_Transition_timeout"]
 [connection signal="timeout" from="DashCD" to="." method="_on_DashCD_timeout"]
 [connection signal="timeout" from="DashTimer" to="." method="_on_DashTimer_timeout"]
-[connection signal="timeout" from="climber" to="." method="_on_climber_timeout"]
+[connection signal="timeout" from="DeathTimer" to="." method="_on_DeathTimer_timeout"]
+[connection signal="area_entered" from="Area2D" to="." method="_on_Area2D_area_entered"]
+[connection signal="area_exited" from="Area2D" to="." method="_on_Area2D_area_exited"]
